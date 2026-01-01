@@ -1,0 +1,39 @@
+name: CT + Chaos Scan
+
+on:
+  schedule:
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: subdomain-monitor
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run scanner
+        env:
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+          CHAOS_KEY: ${{ secrets.CHAOS_KEY }}
+        run: python scanner.py
+
+      - name: Save results
+        run: |
+          git config user.name "recon-bot"
+          git config user.email "recon@bot"
+          git add subs state.json
+          git commit -m "update subdomain scan" || true
+          git push || true
