@@ -1,5 +1,8 @@
 name: CT + Chaos Scan
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: "0 */2 * * *"
